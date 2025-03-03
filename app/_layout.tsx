@@ -32,7 +32,7 @@ export default function CepSearch() {
   };
 
   const fetchAddress = async () => {
-    if (cep.length !== 8) return; // Garante que o CEP tem 8 dígitos antes de buscar
+    if (cep.length !== 8) return;
 
     const cachedData = cache[cep];
 
@@ -46,7 +46,7 @@ export default function CepSearch() {
       const data = await response.json();
       if (!data.erro) {
         setAddress(data);
-        saveToCache(cep, data); // Salva no cache com timestamp
+        saveToCache(cep, data);
       } else {
         Swal.fire("Erro", "CEP inválido", "error");
       }
