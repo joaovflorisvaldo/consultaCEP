@@ -8,7 +8,7 @@ export default {
   },
   dark: {
     text: '#fff',
-    background: '#000',
+    background: '#fff',
     tint: '#fff',
     tabIconDefault: '#ccc',
     tabIconSelected: '#fff',
