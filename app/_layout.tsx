@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import '../global.css';
+import "../global.css";
 
 export default function CepSearch() {
   const [cep, setCep] = useState("");
@@ -17,18 +17,36 @@ export default function CepSearch() {
     localStorage.setItem("cepCache", JSON.stringify(cache));
   }, [savedAddresses, cache]);
 
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ""); // Remove caracteres não numéricos
+    if (value.length <= 8) setCep(value); // Limita a 8 dígitos
+  };
+
+  const saveToCache = (cep: string, data: any) => {
+    const newCache = {
+      ...cache,
+      [cep]: { ...data, timestamp: Date.now() } // Adiciona timestamp
+    };
+    setCache(newCache);
+    localStorage.setItem("cepCache", JSON.stringify(newCache));
+  };
+
   const fetchAddress = async () => {
-    if (!cep) return;
-    if (cache[cep]) {
-      setAddress(cache[cep]);
+    if (cep.length !== 8) return; // Garante que o CEP tem 8 dígitos antes de buscar
+
+    const cachedData = cache[cep];
+
+    if (cachedData && Date.now() - cachedData.timestamp < 3600000) {
+      setAddress(cachedData);
       return;
     }
+
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await response.json();
       if (!data.erro) {
         setAddress(data);
-        setCache((prevCache: any) => ({ ...prevCache, [cep]: data }));
+        saveToCache(cep, data); // Salva no cache com timestamp
       } else {
         Swal.fire("Erro", "CEP inválido", "error");
       }
@@ -53,16 +71,21 @@ export default function CepSearch() {
   return (
     <div className="max-w-lg mx-auto p-4 bg-gray-100 rounded-lg shadow-md mt-10">
       <h1 className="text-xl font-bold text-center mb-4">Buscar CEP</h1>
+      
       <input
         type="text"
         value={cep}
-        onChange={(e) => setCep(e.target.value)}
+        onChange={handleCepChange}
         className="w-full p-2 border rounded mb-2"
         placeholder="Digite o CEP"
+        maxLength={8}
       />
+
       <button
         onClick={fetchAddress}
-        className="w-full bg-blue-500 text-white p-2 rounded mb-2 hover:bg-blue-600"
+        disabled={cep.length !== 8}
+        className={`w-full p-2 rounded mb-2 
+          ${cep.length === 8 ? "bg-blue-500 hover:bg-blue-600 text-white" : "bg-gray-400 cursor-not-allowed"}`}
       >
         Consultar
       </button>
@@ -90,13 +113,13 @@ export default function CepSearch() {
           <h2 className="text-lg font-bold mt-4">Endereços Salvos</h2>
           <ul className="bg-white p-4 rounded shadow max-h-40 overflow-auto">
             {savedAddresses.map((addr, index) => (
-              <li key={index} className="border-b p-2">
+              <li key={addr.cep} className="border-b p-2">
                 {addr.logradouro}, {addr.bairro}, {addr.localidade} - {addr.uf}
               </li>
             ))}
           </ul>
         </>
-      )}        
+      )}
     </div>
   );
 }
