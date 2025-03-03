@@ -18,14 +18,14 @@ export default function CepSearch() {
   }, [savedAddresses, cache]);
 
   const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/\D/g, ""); // Remove caracteres não numéricos
-    if (value.length <= 8) setCep(value); // Limita a 8 dígitos
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 8) setCep(value);
   };
 
   const saveToCache = (cep: string, data: any) => {
     const newCache = {
       ...cache,
-      [cep]: { ...data, timestamp: Date.now() } // Adiciona timestamp
+      [cep]: { ...data, timestamp: Date.now() }
     };
     setCache(newCache);
     localStorage.setItem("cepCache", JSON.stringify(newCache));
